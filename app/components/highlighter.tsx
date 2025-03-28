@@ -35,14 +35,16 @@ const TextHighlighter: React.FC<TextHighlighterProps> = ({
     return a;
   };
 
-  const checkText = (text: string): Highlight[] => {
+  const checkText = (text: string, words: string[]): Highlight[] => {
+    console.log("highlightWords", highlightWords);
     const tokens = text.split(/([\s,.!?]+)/g);
     const alerts: Highlight[] = [];
     let curPos = 0;
     let id = 0;
 
     tokens.forEach((t) => {
-      if (t.trim().length > 0 && highlightWords.includes(t)) {
+      console.log(t);
+      if (t.trim().length > 0 && words.includes(t)) {
         alerts.push({
           id: (id++).toString(),
           startOffset: curPos,
@@ -54,12 +56,13 @@ const TextHighlighter: React.FC<TextHighlighterProps> = ({
     return alerts;
   };
 
-  const check = (ref: HTMLElement) => {
+  const check = (ref: HTMLElement, words: string[]) => {
     const nodes = textNodesUnder(ref);
     const highlightsData: HighlightData[] = [];
 
     nodes.forEach((node) => {
-      const alerts = checkText(node.textContent || "");
+      const alerts = checkText(node.textContent || "", words);
+      console.log(alerts);
       const ranges: { [key: string]: Range } = {};
       alerts.forEach((a) => {
         const r = document.createRange();
@@ -85,11 +88,27 @@ const TextHighlighter: React.FC<TextHighlighterProps> = ({
   };
 
   useEffect(() => {
-    if (contentRef.current) {
-      const ref = contentRef.current;
-      ref.addEventListener("keyup", () => check(ref));
+    console.log("adding new highlightWords", highlightWords);
+    const ref = contentRef.current;
+
+    const handleKeyUp = () => {
+      if (ref) {
+        check(ref, highlightWords);
+      }
+    };
+
+    if (ref) {
+      ref.addEventListener("keyup", handleKeyUp);
+      check(ref, highlightWords);
     }
-  }, []);
+
+    return () => {
+      console.log("cleaning up event listener for keyup");
+      if (ref) {
+        ref.removeEventListener("keyup", handleKeyUp);
+      }
+    };
+  }, [highlightWords]);
 
   return (
     <div className="highlight-container">
