@@ -28,7 +28,7 @@ export default function Home() {
             htmlFor="standard-input"
             className="text-sm text-muted-foreground space-y-2"
           >
-            Word/ words to highlight
+            Word/ words to highlight(separated by ";")
           </label>
           <Input
             id="standard-input"
